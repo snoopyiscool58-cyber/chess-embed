@@ -3,80 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game - Debug</title>
+    <title>Chess Game</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        button { padding: 12px 24px; font-size: 16px; margin: 10px; }
-        #status, #debugOutput { margin: 15px; padding: 10px; border: 1px solid #ccc; }
-        .class-item { cursor: pointer; padding: 5px; margin: 2px; border: 1px solid #ddd; }
-        .class-item:hover { background: #f0f0f0; }
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        #container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button { 
+            padding: 12px 24px; 
+            font-size: 16px; 
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+        #status { 
+            margin: 15px; 
+            padding: 10px; 
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        .ready { background: #e7f7e7; }
+        .loading { background: #fff3cd; }
+        .error { background: #f8d7da; color: #721c24; }
+        #display {
+            width: 800px;
+            height: 600px;
+            border: 1px solid #ccc;
+            margin: 20px auto;
+            background: #f8f8f8;
+        }
     </style>
 </head>
 <body>
-    <h1>Chess Game - Find Main Class</h1>
-    
-    <button id="debug">1. Scan JAR for All Classes</button>
-    <button id="run" disabled>2. Start Game (after scan)</button>
-    
-    <div id="status">Click "Scan JAR" first to find the main class</div>
-    <div id="debugOutput"></div>
+    <div id="container">
+        <h1>Chess Game</h1>
+        
+        <button id="run">Start Chess Game</button>
+        <button id="testSimple">Test Java Runtime</button>
+        
+        <div id="status" class="ready">Ready to start</div>
+        
+        <!-- CheerpJ will render the Java display here -->
+        <div id="display"></div>
+        
+        <div style="margin-top: 20px; font-size: 14px; color: #666;">
+            <p>If the game doesn't start, check the browser console (F12) for errors.</p>
+        </div>
+    </div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
-        let allClasses = [];
-        let mainClass = "Game";
+        // Set CheerpJ location
+        window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
 
-        document.getElementById('debug').addEventListener('click', async () => {
+        // Main game starter
+        document.getElementById('run').addEventListener('click', async () => {
+            const status = document.getElementById('status');
+            const runBtn = document.getElementById('run');
+            
             try {
-                const status = document.getElementById('status');
-                status.textContent = 'Scanning JAR file...';
+                runBtn.disabled = true;
+                status.textContent = 'Step 1: Loading Java runtime...';
+                status.className = 'loading';
+                console.log('Initializing CheerpJ...');
                 
+                // Initialize CheerpJ
                 await cheerpjInit();
-                allClasses = await cheerpjListJar("ChessGuiRealReal-1.0.0.jar");
+                status.textContent = 'Step 2: Runtime loaded...';
+                console.log('CheerpJ initialized');
                 
-                const output = document.getElementById('debugOutput');
-                output.innerHTML = '<h3>All classes found in JAR:</h3>';
+                // Create display for AWT/Swing
+                cheerpjCreateDisplay(800, 600);
+                status.textContent = 'Step 3: Starting chess game...';
                 
-                allClasses.forEach(cls => {
-                    output.innerHTML += `
-                        <div class="class-item" onclick="tryClass('${cls}')">
-                            ${cls}
-                        </div>`;
-                });
+                // Run the main class
+                await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
                 
-                // Enable run button
-                document.getElementById('run').disabled = false;
-                document.getElementById('status').textContent = `Found ${allClasses.length} classes. Click any class to test it, or click "Start Game" to try 'Game'`;
+                status.textContent = 'Chess game running!';
+                status.className = 'ready';
+                console.log('Game started successfully');
                 
             } catch (e) {
-                console.error('Scan error:', e);
-                document.getElementById('debugOutput').textContent = 'Error loading JAR: ' + e.message;
-                document.getElementById('status').textContent = 'Failed to scan JAR - might be missing or corrupted';
+                console.error('Full error details:', e);
+                status.textContent = 'Error: ' + e.message;
+                status.className = 'error';
+                runBtn.disabled = false;
+                
+                // Provide specific guidance based on error type
+                if (e.message.includes('Could not find or load main class')) {
+                    status.textContent += ' - The main class "Game" was not found in the JAR';
+                } else if (e.message.includes('404')) {
+                    status.textContent += ' - JAR file not found on server';
+                } else if (e.message.includes('AWT') || e.message.includes('Swing')) {
+                    status.textContent += ' - GUI compatibility issue with CheerpJ';
+                } else if (e.message.includes('cheerpjCreateDisplay is not defined')) {
+                    status.textContent += ' - Using newer CheerpJ API, display will be created automatically';
+                    // Retry without explicit display creation
+                    try {
+                        await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
+                        status.textContent = 'Chess game running!';
+                        status.className = 'ready';
+                    } catch (e2) {
+                        status.textContent = 'Error: ' + e2.message;
+                    }
+                }
             }
         });
 
-        // Function to try a specific class
-        window.tryClass = async function(className) {
+        // Test button for basic Java functionality
+        document.getElementById('testSimple').addEventListener('click', async () => {
             const status = document.getElementById('status');
             try {
-                status.textContent = `Trying class: ${className}...`;
-                await cheerpjRunMain(className, "ChessGuiRealReal-1.0.0.jar");
-                status.textContent = `SUCCESS! Running with class: ${className}`;
-                mainClass = className;
+                status.textContent = 'Testing Java runtime...';
+                status.className = 'loading';
+                
+                await cheerpjInit();
+                
+                // Try to create a simple Java object to test the runtime
+                const testResult = await cheerpjRunMain("java.util.Date", "");
+                status.textContent = 'Java runtime test passed!';
+                status.className = 'ready';
+                
             } catch (e) {
-                status.textContent = `Failed with ${className}: ${e.message}`;
+                status.textContent = 'Java runtime test failed: ' + e.message;
+                status.className = 'error';
             }
-        };
+        });
 
-        // Original run button
-        document.getElementById('run').addEventListener('click', async () => {
+        // Initialize button states when page loads
+        window.addEventListener('load', () => {
             const status = document.getElementById('status');
-            try {
-                status.textContent = `Trying default class: ${mainClass}...`;
-                await cheerpjRunMain(mainClass, "ChessGuiRealReal-1.0.0.jar");
-                status.textContent = 'Chess game running!';
-            } catch (e) {
-                status.textContent = `Failed with ${mainClass}: ${e.message}. Try scanning for classes first.`;
+            if (typeof window.cheerpjInit === 'function') {
+                status.textContent = 'Ready - CheerpJ runtime loaded';
+                status.className = 'ready';
+            } else {
+                status.textContent = 'Error: CheerpJ runtime not loaded';
+                status.className = 'error';
             }
         });
     </script>
