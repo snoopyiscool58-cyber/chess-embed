@@ -82,16 +82,15 @@
                 status.textContent = 'Initializing Java runtime...';
                 status.className = 'loading';
                 
-                // Initialize CheerpJ
+                // Initialize CheerpJ - this is the ONLY required function
                 await cheerpjInit();
                 
-                // Use the CORRECT function name for setting display
-                // The function is cheerpjCreateDisplay, not cheerpjSetDisplay
-                cheerpjCreateDisplay(800, 600);
+                // In newer CheerpJ versions, you don't need to create display manually
+                // The Java application will create its own window
                 
                 status.textContent = 'Starting chess game...';
                 
-                // Run the main class
+                // Run the main class - this should automatically handle display
                 await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
                 
                 status.textContent = 'Chess game is running!';
