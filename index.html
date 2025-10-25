@@ -9,30 +9,51 @@
             font-family: Arial, sans-serif;
             text-align: center;
             padding: 20px;
+            background: #f0f0f0;
         }
-        #display {
-            border: 1px solid #ccc;
-            margin: 20px auto;
+        #container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-size: 16px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
             margin: 10px;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
         }
         #status {
-            margin: 10px;
+            margin: 15px;
+            padding: 10px;
+            border-radius: 5px;
             font-weight: bold;
         }
+        .ready { background: #e7f7e7; }
+        .loading { background: #fff3cd; }
+        .error { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
-    <h1>Chess Game</h1>
-    
-    <button id="run" disabled>Start Chess Game</button>
-    <div id="status">Loading runtime...</div>
-    
-    <!-- CheerpJ will render the Java display here -->
-    <div id="display"></div>
+    <div id="container">
+        <h1>Chess Game</h1>
+        
+        <button id="run" disabled>Start Chess Game</button>
+        <div id="status" class="loading">Loading runtime...</div>
+        
+        <!-- CheerpJ will render the Java display here -->
+        <div id="display"></div>
+    </div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
@@ -45,8 +66,10 @@
             if (typeof window.cheerpjInit === 'function') {
                 runBtn.disabled = false;
                 status.textContent = 'Ready to start chess game.';
+                status.className = 'ready';
             } else {
                 status.textContent = '❌ Failed to load runtime.';
+                status.className = 'error';
             }
         });
 
@@ -57,22 +80,27 @@
             try {
                 runBtn.disabled = true;
                 status.textContent = 'Initializing Java runtime...';
+                status.className = 'loading';
                 
+                // Initialize CheerpJ
                 await cheerpjInit();
                 
-                // Set up the display where Java AWT/Swing will render
-                cheerpjSetDisplay("display");
+                // Use the CORRECT function name for setting display
+                // The function is cheerpjCreateDisplay, not cheerpjSetDisplay
+                cheerpjCreateDisplay(800, 600);
                 
                 status.textContent = 'Starting chess game...';
                 
-                // Try different possible main class configurations
+                // Run the main class
                 await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
                 
                 status.textContent = 'Chess game is running!';
+                status.className = 'ready';
                 
             } catch (e) {
                 console.error('Launch error:', e);
                 status.textContent = '❌ Failed to launch: ' + e.message;
+                status.className = 'error';
                 runBtn.disabled = false;
             }
         });
