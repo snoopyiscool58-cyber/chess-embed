@@ -4,16 +4,30 @@
   <meta charset="UTF-8" />
   <title>Chess</title>
 
-  
-  <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"
-          onload="window._cjLoaded = true"
-          onerror="window._cjLoaded = false"></script>
+  <!-- ✅ Force CheerpJ to load runtime files from CDN -->
+  <script>
+    window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
+  </script>
+  <script src="https://cjrtnc.leaningtech.com/2.3/loader.js" onload="window._cjLoaded = true"></script>
 
   <style>
-    body { font-family: system-ui,-apple-system,sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; margin:0; }
-    button { padding:10px 20px; font-size:18px; }
-    #status { margin-top:16px; }
-    .ok { color:#0a0; } .err { color:#c00; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: #f5f5f5;
+      margin: 0;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+    }
+    #status {
+      margin-top: 16px;
+    }
   </style>
 </head>
 <body>
@@ -21,63 +35,30 @@
   <p id="status">Loading runtime…</p>
 
   <script>
-
+    // Enable the button after loader.js is ready
     window.addEventListener('load', () => {
-      const s = document.getElementById('status');
-
-
-      if (window._cjLoaded !== true) {
-        s.textContent = 'Runtime failed to load (loader.js not executed). Hard-refresh (Cmd/Ctrl+Shift+R).';
-        s.className = 'err';
-        return;
+      if (typeof window.cheerpjInit === 'function') {
+        document.getElementById('run').disabled = false;
+        document.getElementById('status').textContent = 'Ready.';
+      } else {
+        document.getElementById('status').textContent =
+          '❌ Failed to load runtime (CDN blocked?).';
       }
-
-      // Support both CheerpJ generations: cheerpjInit (v2/v3) and cjInit (older)
-      const hasNew = typeof window.cheerpjInit === 'function';
-      const hasOld = typeof window.cjInit === 'function';
-
-      if (!hasNew && !hasOld) {
-        s.textContent = 'Runtime loaded, but no init function found (cheerpjInit/cjInit). Your loader.js may be too old—try re-downloading.';
-        s.className = 'err';
-        return;
-      }
-
-      document.getElementById('run').disabled = false;
-      s.textContent = 'Ready.';
-      s.className = 'ok';
     });
 
+    // Run the JAR when the button is clicked
     document.getElementById('run').addEventListener('click', async () => {
-      const s = document.getElementById('status');
+      const status = document.getElementById('status');
       try {
-        s.textContent = 'Initializing…';
-
-        // Prefer modern API if present
-        if (typeof window.cheerpjInit === 'function') {
-          await window.cheerpjInit();
-          // Create display for Swing/AWT
-          if (typeof window.cheerpjCreateDisplay === 'function') {
-            await window.cheerpjCreateDisplay(800, 700);
-          }
-          // EITHER run the Main class from the JAR…
-          if (typeof window.cheerpjRunMain === 'function') {
-            await window.cheerpjRunMain("Game", "/app/ChessGuiRealReal-1.0.0.jar");
-          } else {
-            // …or just run the jar (older way still accepted in v2)
-            window.cheerpjRunJar && window.cheerpjRunJar("ChessGuiRealReal-1.0.0.jar");
-          }
-        } else if (typeof window.cjInit === 'function') {
-          // Older CheerpJ fallback
-          await window.cjInit();
-          window.cheerpjRunJar && window.cheerpjRunJar("ChessGuiRealReal-1.0.0.jar");
-        }
-
-        s.textContent = 'Running!';
-        s.className = 'ok';
+        status.textContent = 'Loading...';
+        await cheerpjInit();
+        await cheerpjCreateDisplay(800, 700);
+        status.textContent = 'Starting...';
+        await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
+        status.textContent = 'Running!';
       } catch (e) {
         console.error(e);
-        s.textContent = 'Failed to launch game: ' + e;
-        s.className = 'err';
+        status.textContent = '❌ Failed to launch game: ' + e;
       }
     });
   </script>
