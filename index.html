@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game - Diagnostic</title>
+    <title>Chess Game - Final Attempt</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         button { padding: 12px 24px; font-size: 16px; margin: 10px; }
@@ -13,48 +13,83 @@
     </style>
 </head>
 <body>
-    <h1>Chess Game - Diagnostic</h1>
+    <h1>Chess Game - Final Tests</h1>
     
-    <button id="run">Try Run Game</button>
-    <button id="checkJar">Check JAR Integrity</button>
+    <button id="test1">Test 1: Simple Hello World</button>
+    <button id="test2">Test 2: Different CheerpJ Version</button>
+    <button id="test3">Test 3: Manual JAR Download</button>
     
-    <div id="status">Game.class is in JAR - testing why it won't load</div>
+    <div id="status">Select a test option</div>
 
-    <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
-        document.getElementById('run').addEventListener('click', async () => {
+        // Test 1: Simple Java program
+        document.getElementById('test1').addEventListener('click', async () => {
             const status = document.getElementById('status');
             try {
-                status.textContent = 'Attempting to run Game...';
-                await cheerpjInit();
-                await cheerpjRunMain("Game", "/chess-embed/ChessGuiRealReal-1.0.0.jar");
-                status.textContent = 'SUCCESS! Game is running';
+                status.textContent = 'Testing with simple Java program...';
+                
+                // Create a simple Java program on the fly
+                const simpleJavaCode = `
+                public class SimpleTest {
+                    public static void main(String[] args) {
+                        System.out.println("Hello from CheerpJ!");
+                    }
+                }`;
+                
+                // This would require a different approach - let's try a pre-built simple JAR
+                status.textContent = 'Simple test requires building a separate JAR first';
+                
             } catch (e) {
-                status.textContent = 'Error: ' + e.message;
-                console.error('Full error:', e);
+                status.textContent = 'Simple test error: ' + e.message;
             }
         });
 
-        document.getElementById('checkJar').addEventListener('click', async () => {
+        // Test 2: Different CheerpJ version
+        document.getElementById('test2').addEventListener('click', async () => {
             const status = document.getElementById('status');
             try {
-                status.textContent = 'Downloading and checking JAR...';
+                status.textContent = 'Loading CheerpJ 2.1...';
                 
-                // Download the JAR and check its size
-                const response = await fetch("/chess-embed/ChessGuiRealReal-1.0.0.jar");
-                const blob = await response.blob();
-                const size = blob.size;
+                // Load different version
+                const script = document.createElement('script');
+                script.src = 'https://cjrtnc.leaningtech.com/2.1/loader.js';
+                document.head.appendChild(script);
                 
-                status.textContent = `JAR size: ${size} bytes. `;
-                
-                if (size < 1000) {
-                    status.textContent += 'JAR might be corrupted - too small';
-                } else {
-                    status.textContent += 'JAR size looks normal';
-                }
+                script.onload = async () => {
+                    try {
+                        await cheerpjInit();
+                        await cheerpjRunMain("Game", "/chess-embed/ChessGuiRealReal-1.0.0.jar");
+                        status.textContent = 'SUCCESS with v2.1!';
+                    } catch (e) {
+                        status.textContent = 'Failed with v2.1: ' + e.message;
+                    }
+                };
                 
             } catch (e) {
-                status.textContent = 'Error checking JAR: ' + e.message;
+                status.textContent = 'Version test error: ' + e.message;
+            }
+        });
+
+        // Test 3: Download and verify JAR
+        document.getElementById('test3').addEventListener('click', async () => {
+            const status = document.getElementById('status');
+            try {
+                status.textContent = 'Downloading JAR to verify contents...';
+                
+                const response = await fetch('/chess-embed/ChessGuiRealReal-1.0.0.jar');
+                const blob = await response.blob();
+                
+                // Create download link
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'ChessGuiRealReal-1.0.0-verified.jar';
+                a.click();
+                
+                status.textContent = 'JAR downloaded. Please check if it runs locally and has Game.class';
+                
+            } catch (e) {
+                status.textContent = 'Download test error: ' + e.message;
             }
         });
     </script>
