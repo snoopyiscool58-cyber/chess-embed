@@ -5,102 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Game</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 20px;
-            background: #f0f0f0;
-        }
-        #container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 16px;
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-        }
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
-        #status {
-            margin: 15px;
-            padding: 10px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .ready { background: #e7f7e7; }
-        .loading { background: #fff3cd; }
-        .error { background: #f8d7da; color: #721c24; }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        button { padding: 12px 24px; font-size: 16px; margin: 10px; }
+        #status { margin: 15px; padding: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="container">
-        <h1>Chess Game</h1>
-        
-        <button id="run" disabled>Start Chess Game</button>
-        <div id="status" class="loading">Loading runtime...</div>
-        
-        <!-- CheerpJ will render the Java display here -->
-        <div id="display"></div>
-    </div>
+    <h1>Chess Game</h1>
+    <button id="run">Start Chess Game</button>
+    <div id="status">Click to start</div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
-        window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
-
-        window.addEventListener('load', () => {
-            const runBtn = document.getElementById('run');
-            const status = document.getElementById('status');
-
-            if (typeof window.cheerpjInit === 'function') {
-                runBtn.disabled = false;
-                status.textContent = 'Ready to start chess game.';
-                status.className = 'ready';
-            } else {
-                status.textContent = '❌ Failed to load runtime.';
-                status.className = 'error';
-            }
-        });
-
         document.getElementById('run').addEventListener('click', async () => {
             const status = document.getElementById('status');
             const runBtn = document.getElementById('run');
             
             try {
                 runBtn.disabled = true;
-                status.textContent = 'Initializing Java runtime...';
-                status.className = 'loading';
+                status.textContent = 'Initializing...';
                 
-                // Initialize CheerpJ - this is the ONLY required function
                 await cheerpjInit();
-                
-                // In newer CheerpJ versions, you don't need to create display manually
-                // The Java application will create its own window
-                
                 status.textContent = 'Starting chess game...';
                 
-                // Run the main class - this should automatically handle display
+                // Since files are in default package, just use "Game"
                 await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
                 
-                status.textContent = 'Chess game is running!';
-                status.className = 'ready';
+                status.textContent = 'Chess game running!';
                 
             } catch (e) {
-                console.error('Launch error:', e);
-                status.textContent = '❌ Failed to launch: ' + e.message;
-                status.className = 'error';
+                console.error('Error:', e);
+                status.textContent = 'Error: ' + e.message;
                 runBtn.disabled = false;
+                
+                // If Game doesn't work, try other main classes
+                if (e.message.includes('Game')) {
+                    status.textContent += ' - Trying Board...';
+                    try {
+                        await cheerpjRunMain("Board", "./ChessGuiRealReal-1.0.0.jar");
+                        status.textContent = 'Started with Board class!';
+                    } catch (e2) {
+                        status.textContent = 'Both Game and Board failed';
+                    }
+                }
             }
         });
     </script>
