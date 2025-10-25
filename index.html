@@ -3,40 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game</title>
+    <title>Chess Game - Debug</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
         button { padding: 12px 24px; font-size: 16px; margin: 10px; }
-        #status { margin: 15px; padding: 10px; font-weight: bold; }
+        #status, #debugOutput { margin: 15px; padding: 10px; border: 1px solid #ccc; }
+        .class-item { cursor: pointer; padding: 5px; margin: 2px; border: 1px solid #ddd; }
+        .class-item:hover { background: #f0f0f0; }
     </style>
 </head>
 <body>
-    <h1>Chess Game</h1>
-    <button id="run">Start Chess Game</button>
-    <div id="status">Ready to start</div>
+    <h1>Chess Game - Find Main Class</h1>
+    
+    <button id="debug">1. Scan JAR for All Classes</button>
+    <button id="run" disabled>2. Start Game (after scan)</button>
+    
+    <div id="status">Click "Scan JAR" first to find the main class</div>
+    <div id="debugOutput"></div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
-        document.getElementById('run').addEventListener('click', async () => {
-            const status = document.getElementById('status');
-            const runBtn = document.getElementById('run');
-            
+        let allClasses = [];
+        let mainClass = "Game";
+
+        document.getElementById('debug').addEventListener('click', async () => {
             try {
-                runBtn.disabled = true;
-                status.textContent = 'Loading Java runtime...';
+                const status = document.getElementById('status');
+                status.textContent = 'Scanning JAR file...';
                 
                 await cheerpjInit();
-                status.textContent = 'Starting chess game...';
+                allClasses = await cheerpjListJar("ChessGuiRealReal-1.0.0.jar");
                 
-                // Try the main class
-                await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
+                const output = document.getElementById('debugOutput');
+                output.innerHTML = '<h3>All classes found in JAR:</h3>';
                 
-                status.textContent = 'Chess game running!';
+                allClasses.forEach(cls => {
+                    output.innerHTML += `
+                        <div class="class-item" onclick="tryClass('${cls}')">
+                            ${cls}
+                        </div>`;
+                });
+                
+                // Enable run button
+                document.getElementById('run').disabled = false;
+                document.getElementById('status').textContent = `Found ${allClasses.length} classes. Click any class to test it, or click "Start Game" to try 'Game'`;
                 
             } catch (e) {
-                console.error('Full error:', e);
-                status.textContent = 'Error: ' + e.message;
-                runBtn.disabled = false;
+                console.error('Scan error:', e);
+                document.getElementById('debugOutput').textContent = 'Error loading JAR: ' + e.message;
+                document.getElementById('status').textContent = 'Failed to scan JAR - might be missing or corrupted';
+            }
+        });
+
+        // Function to try a specific class
+        window.tryClass = async function(className) {
+            const status = document.getElementById('status');
+            try {
+                status.textContent = `Trying class: ${className}...`;
+                await cheerpjRunMain(className, "ChessGuiRealReal-1.0.0.jar");
+                status.textContent = `SUCCESS! Running with class: ${className}`;
+                mainClass = className;
+            } catch (e) {
+                status.textContent = `Failed with ${className}: ${e.message}`;
+            }
+        };
+
+        // Original run button
+        document.getElementById('run').addEventListener('click', async () => {
+            const status = document.getElementById('status');
+            try {
+                status.textContent = `Trying default class: ${mainClass}...`;
+                await cheerpjRunMain(mainClass, "ChessGuiRealReal-1.0.0.jar");
+                status.textContent = 'Chess game running!';
+            } catch (e) {
+                status.textContent = `Failed with ${mainClass}: ${e.message}. Try scanning for classes first.`;
             }
         });
     </script>
