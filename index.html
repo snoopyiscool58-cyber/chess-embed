@@ -54,7 +54,7 @@
         await cheerpjInit();
         await cheerpjCreateDisplay(800, 700);
         status.textContent = 'Starting...';
-        await cheerpjRunMain("Game", "/chess-embed/ChessGuiRealReal-1.0.0.jar");
+        await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
         status.textContent = 'Running!';
       } catch (e) {
         console.error(e);
