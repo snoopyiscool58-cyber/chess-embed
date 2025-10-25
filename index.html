@@ -56,7 +56,6 @@
         <h1>Chess Game</h1>
         
         <button id="run">Start Chess Game</button>
-        <button id="testSimple">Test Java Runtime</button>
         
         <div id="status" class="ready">Ready to start</div>
         
@@ -64,16 +63,12 @@
         <div id="display"></div>
         
         <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>If the game doesn't start, check the browser console (F12) for errors.</p>
+            <p>CheerpJ is loaded - click "Start Chess Game" to run your chess application</p>
         </div>
     </div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
-        // Set CheerpJ location
-        window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
-
-        // Main game starter
         document.getElementById('run').addEventListener('click', async () => {
             const status = document.getElementById('status');
             const runBtn = document.getElementById('run');
@@ -86,14 +81,10 @@
                 
                 // Initialize CheerpJ
                 await cheerpjInit();
-                status.textContent = 'Step 2: Runtime loaded...';
+                status.textContent = 'Step 2: Runtime loaded, starting game...';
                 console.log('CheerpJ initialized');
                 
-                // Create display for AWT/Swing
-                cheerpjCreateDisplay(800, 600);
-                status.textContent = 'Step 3: Starting chess game...';
-                
-                // Run the main class
+                // Try running the game directly - let CheerpJ handle display automatically
                 await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
                 
                 status.textContent = 'Chess game running!';
@@ -111,52 +102,15 @@
                     status.textContent += ' - The main class "Game" was not found in the JAR';
                 } else if (e.message.includes('404')) {
                     status.textContent += ' - JAR file not found on server';
-                } else if (e.message.includes('AWT') || e.message.includes('Swing')) {
-                    status.textContent += ' - GUI compatibility issue with CheerpJ';
-                } else if (e.message.includes('cheerpjCreateDisplay is not defined')) {
-                    status.textContent += ' - Using newer CheerpJ API, display will be created automatically';
-                    // Retry without explicit display creation
-                    try {
-                        await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
-                        status.textContent = 'Chess game running!';
-                        status.className = 'ready';
-                    } catch (e2) {
-                        status.textContent = 'Error: ' + e2.message;
-                    }
                 }
             }
         });
 
-        // Test button for basic Java functionality
-        document.getElementById('testSimple').addEventListener('click', async () => {
-            const status = document.getElementById('status');
-            try {
-                status.textContent = 'Testing Java runtime...';
-                status.className = 'loading';
-                
-                await cheerpjInit();
-                
-                // Try to create a simple Java object to test the runtime
-                const testResult = await cheerpjRunMain("java.util.Date", "");
-                status.textContent = 'Java runtime test passed!';
-                status.className = 'ready';
-                
-            } catch (e) {
-                status.textContent = 'Java runtime test failed: ' + e.message;
-                status.className = 'error';
-            }
-        });
-
-        // Initialize button states when page loads
+        // Initialize when page loads
         window.addEventListener('load', () => {
             const status = document.getElementById('status');
-            if (typeof window.cheerpjInit === 'function') {
-                status.textContent = 'Ready - CheerpJ runtime loaded';
-                status.className = 'ready';
-            } else {
-                status.textContent = 'Error: CheerpJ runtime not loaded';
-                status.className = 'error';
-            }
+            status.textContent = 'Ready - Click "Start Chess Game" to begin';
+            status.className = 'ready';
         });
     </script>
 </body>
