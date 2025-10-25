@@ -3,86 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess Game</title>
+    <title>Chess Game - Diagnostic</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            text-align: center; 
-            padding: 20px;
-            background: #f0f0f0;
-        }
-        #container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        button { 
-            padding: 12px 24px; 
-            font-size: 16px; 
-            background: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-        }
-        #status { 
-            margin: 15px; 
-            padding: 10px; 
-            font-weight: bold;
-            border-radius: 5px;
-        }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        button { padding: 12px 24px; font-size: 16px; margin: 10px; }
+        #status { margin: 15px; padding: 10px; font-weight: bold; }
         .ready { background: #e7f7e7; }
-        .loading { background: #fff3cd; }
         .error { background: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
-    <div id="container">
-        <h1>Chess Game</h1>
-        
-        <button id="runCorrect">Start Chess Game (Correct Path)</button>
-        
-        <div id="status" class="ready">Ready to start</div>
-        
-        <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>Using exact path: /chess-embed/ChessGuiRealReal-1.0.0.jar</p>
-        </div>
-    </div>
+    <h1>Chess Game - Diagnostic</h1>
+    
+    <button id="run">Try Run Game</button>
+    <button id="checkJar">Check JAR Integrity</button>
+    
+    <div id="status">Game.class is in JAR - testing why it won't load</div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
-        document.getElementById('runCorrect').addEventListener('click', async () => {
+        document.getElementById('run').addEventListener('click', async () => {
             const status = document.getElementById('status');
-            const runBtn = document.getElementById('runCorrect');
-            
             try {
-                runBtn.disabled = true;
-                status.textContent = 'Loading Java runtime...';
-                status.className = 'loading';
-                
+                status.textContent = 'Attempting to run Game...';
                 await cheerpjInit();
-                status.textContent = 'Starting chess game...';
-                
-                // Use the EXACT correct path with /chess-embed/
                 await cheerpjRunMain("Game", "/chess-embed/ChessGuiRealReal-1.0.0.jar");
+                status.textContent = 'SUCCESS! Game is running';
+            } catch (e) {
+                status.textContent = 'Error: ' + e.message;
+                console.error('Full error:', e);
+            }
+        });
+
+        document.getElementById('checkJar').addEventListener('click', async () => {
+            const status = document.getElementById('status');
+            try {
+                status.textContent = 'Downloading and checking JAR...';
                 
-                status.textContent = 'Chess game running!';
-                status.className = 'ready';
+                // Download the JAR and check its size
+                const response = await fetch("/chess-embed/ChessGuiRealReal-1.0.0.jar");
+                const blob = await response.blob();
+                const size = blob.size;
+                
+                status.textContent = `JAR size: ${size} bytes. `;
+                
+                if (size < 1000) {
+                    status.textContent += 'JAR might be corrupted - too small';
+                } else {
+                    status.textContent += 'JAR size looks normal';
+                }
                 
             } catch (e) {
-                console.error('Error:', e);
-                status.textContent = 'Error: ' + e.message;
-                status.className = 'error';
-                runBtn.disabled = false;
-                
-                // Show exactly what URL it's trying to access
-                if (e.message.includes('404')) {
-                    status.textContent += ' - Check browser network tab for exact URL being requested';
-                }
+                status.textContent = 'Error checking JAR: ' + e.message;
             }
         });
     </script>
