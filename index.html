@@ -1,56 +1,31 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Chess</title>
+<script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
+<script>
+  window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
 
-  <!-- CheerpJ runtime from CDN (v2.3) -->
-  <script>
-    // Ensure the loader fetches its companion files (cheerpj.js, jni.wasm, rt.jar, etc.) from the CDN
-    window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
-  </script>
-  <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
+  window.addEventListener('load', () => {
+    const runBtn = document.getElementById('run');
+    const status = document.getElementById('status');
 
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 100vh; margin: 0; background: #f5f5f5;
+    if (typeof window.cheerpjInit === 'function') {
+      runBtn.disabled = false;
+      status.textContent = 'Ready.';
+    } else {
+      status.textContent = '❌ Failed to load runtime.';
     }
-    button { padding: 10px 20px; font-size: 18px; }
-    #status { margin-top: 16px; }
-  </style>
-</head>
-<body>
-  <button id="run" disabled>Run Chess</button>
-  <p id="status">Loading runtime…</p>
+  });
 
-  <script>
-    // Enable the button only after the runtime is present
-    window.addEventListener('load', () => {
-      if (typeof window.cheerpjInit === 'function') {
-        document.getElementById('run').disabled = false;
-        document.getElementById('status').textContent = 'Ready.';
-      } else {
-        document.getElementById('status').textContent = '❌ Failed to load runtime.';
-      }
-    });
-
-    // Launch your JAR (JAR is next to index.html; main class is Game)
-    document.getElementById('run').addEventListener('click', async () => {
-      const status = document.getElementById('status');
-      try {
-        status.textContent = 'Initializing…';
-        await cheerpjInit();
-        await cheerpjCreateDisplay(800, 700);
-        status.textContent = 'Starting…';
-        await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
-        status.textContent = 'Running!';
-      } catch (e) {
-        console.error(e);
-        status.textContent = '❌ Failed to launch game: ' + e;
-      }
-    });
-  </script>
-</body>
-</html>
+  document.getElementById('run').addEventListener('click', async () => {
+    const status = document.getElementById('status');
+    try {
+      status.textContent = 'Initializing…';
+      await cheerpjInit();
+      await cheerpjCreateDisplay(800, 700);
+      status.textContent = 'Starting…';
+      await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
+      status.textContent = 'Running!';
+    } catch (e) {
+      console.error(e);
+      status.textContent = '❌ Failed to launch game: ' + e;
+    }
+  });
+</script>
