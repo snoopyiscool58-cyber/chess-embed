@@ -29,10 +29,6 @@
             cursor: pointer;
             margin: 10px;
         }
-        button:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-        }
         #status { 
             margin: 15px; 
             padding: 10px; 
@@ -42,13 +38,6 @@
         .ready { background: #e7f7e7; }
         .loading { background: #fff3cd; }
         .error { background: #f8d7da; color: #721c24; }
-        #display {
-            width: 800px;
-            height: 600px;
-            border: 1px solid #ccc;
-            margin: 20px auto;
-            background: #f8f8f8;
-        }
     </style>
 </head>
 <body>
@@ -56,62 +45,48 @@
         <h1>Chess Game</h1>
         
         <button id="run">Start Chess Game</button>
+        <button id="runAbsolute">Start with Absolute URL</button>
         
         <div id="status" class="ready">Ready to start</div>
         
-        <!-- CheerpJ will render the Java display here -->
-        <div id="display"></div>
-        
         <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>CheerpJ is loaded - click "Start Chess Game" to run your chess application</p>
+            <p>If relative path fails, try the absolute URL button</p>
         </div>
     </div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
+        // Main button with relative path
         document.getElementById('run').addEventListener('click', async () => {
             const status = document.getElementById('status');
-            const runBtn = document.getElementById('run');
-            
             try {
-                runBtn.disabled = true;
-                status.textContent = 'Step 1: Loading Java runtime...';
-                status.className = 'loading';
-                console.log('Initializing CheerpJ...');
-                
-                // Initialize CheerpJ
+                status.textContent = 'Loading with relative path...';
                 await cheerpjInit();
-                status.textContent = 'Step 2: Runtime loaded, starting game...';
-                console.log('CheerpJ initialized');
-                
-                // Try running the game directly - let CheerpJ handle display automatically
                 await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
-                
                 status.textContent = 'Chess game running!';
-                status.className = 'ready';
-                console.log('Game started successfully');
-                
             } catch (e) {
-                console.error('Full error details:', e);
-                status.textContent = 'Error: ' + e.message;
-                status.className = 'error';
-                runBtn.disabled = false;
-                
-                // Provide specific guidance based on error type
-                if (e.message.includes('Could not find or load main class')) {
-                    status.textContent += ' - The main class "Game" was not found in the JAR';
-                } else if (e.message.includes('404')) {
-                    status.textContent += ' - JAR file not found on server';
-                }
+                status.textContent = 'Relative path failed: ' + e.message;
             }
         });
 
-        // Initialize when page loads
-        window.addEventListener('load', () => {
+        // Alternative button with absolute URL
+        document.getElementById('runAbsolute').addEventListener('click', async () => {
             const status = document.getElementById('status');
-            status.textContent = 'Ready - Click "Start Chess Game" to begin';
-            status.className = 'ready';
+            try {
+                status.textContent = 'Loading with absolute URL...';
+                await cheerpjInit();
+                // Use the CORRECT absolute URL
+                await cheerpjRunMain("Game", "https://snoopyiscool58-cyber.github.io/chess-embed/ChessGuiRealReal-1.0.0.jar");
+                status.textContent = 'Chess game running!';
+            } catch (e) {
+                status.textContent = 'Absolute URL failed: ' + e.message;
+            }
         });
+
+        // Clear any cached URLs
+        if (window.cheerpj) {
+            delete window.cheerpj;
+        }
     </script>
 </body>
 </html>
