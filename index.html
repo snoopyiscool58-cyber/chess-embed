@@ -1,31 +1,81 @@
-<script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
-<script>
-  window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+        #display {
+            border: 1px solid #ccc;
+            margin: 20px auto;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+        }
+        #status {
+            margin: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Chess Game</h1>
+    
+    <button id="run" disabled>Start Chess Game</button>
+    <div id="status">Loading runtime...</div>
+    
+    <!-- CheerpJ will render the Java display here -->
+    <div id="display"></div>
 
-  window.addEventListener('load', () => {
-    const runBtn = document.getElementById('run');
-    const status = document.getElementById('status');
+    <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
+    <script>
+        window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
 
-    if (typeof window.cheerpjInit === 'function') {
-      runBtn.disabled = false;
-      status.textContent = 'Ready.';
-    } else {
-      status.textContent = '❌ Failed to load runtime.';
-    }
-  });
+        window.addEventListener('load', () => {
+            const runBtn = document.getElementById('run');
+            const status = document.getElementById('status');
 
-  document.getElementById('run').addEventListener('click', async () => {
-    const status = document.getElementById('status');
-    try {
-      status.textContent = 'Initializing…';
-      await cheerpjInit();
-      await cheerpjCreateDisplay(800, 700);
-      status.textContent = 'Starting…';
-      await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
-      status.textContent = 'Running!';
-    } catch (e) {
-      console.error(e);
-      status.textContent = '❌ Failed to launch game: ' + e;
-    }
-  });
-</script>
+            if (typeof window.cheerpjInit === 'function') {
+                runBtn.disabled = false;
+                status.textContent = 'Ready to start chess game.';
+            } else {
+                status.textContent = '❌ Failed to load runtime.';
+            }
+        });
+
+        document.getElementById('run').addEventListener('click', async () => {
+            const status = document.getElementById('status');
+            const runBtn = document.getElementById('run');
+            
+            try {
+                runBtn.disabled = true;
+                status.textContent = 'Initializing Java runtime...';
+                
+                await cheerpjInit();
+                
+                // Set up the display where Java AWT/Swing will render
+                cheerpjSetDisplay("display");
+                
+                status.textContent = 'Starting chess game...';
+                
+                // Try different possible main class configurations
+                await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
+                
+                status.textContent = 'Chess game is running!';
+                
+            } catch (e) {
+                console.error('Launch error:', e);
+                status.textContent = '❌ Failed to launch: ' + e.message;
+                runBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
