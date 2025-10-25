@@ -4,11 +4,11 @@
   <meta charset="UTF-8" />
   <title>Chess</title>
 
-  <!-- ✅ Force CheerpJ to load runtime files from CDN -->
+  <!-- Load CheerpJ Runtime from CDN (v2.3) -->
   <script>
     window.cjLocation = "https://cjrtnc.leaningtech.com/2.3/";
   </script>
-  <script src="https://cjrtnc.leaningtech.com/2.3/loader.js" onload="window._cjLoaded = true"></script>
+  <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
 
   <style>
     body {
@@ -18,8 +18,8 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
-      background: #f5f5f5;
       margin: 0;
+      background: #f5f5f5;
     }
     button {
       padding: 10px 20px;
@@ -35,31 +35,38 @@
   <p id="status">Loading runtime…</p>
 
   <script>
-    // Enable the button after loader.js is ready
+    // Enable button only after CheerpJ runtime loads
     window.addEventListener('load', () => {
       if (typeof window.cheerpjInit === 'function') {
         document.getElementById('run').disabled = false;
         document.getElementById('status').textContent = 'Ready.';
       } else {
-        document.getElementById('status').textContent =
-          '❌ Failed to load runtime (CDN blocked?).';
+        document.getElementById('status').textContent = '❌ Failed to load runtime.';
       }
     });
 
-    // Run the JAR when the button is clicked
+    // Run the JAR
     document.getElementById('run').addEventListener('click', async () => {
       const status = document.getElementById('status');
       try {
-        status.textContent = 'Loading...';
+        status.textContent = 'Initializing...';
         await cheerpjInit();
         await cheerpjCreateDisplay(800, 700);
         status.textContent = 'Starting...';
-        await cheerpjRunMain("Game", "ChessGuiRealReal-1.0.0.jar");
+
+        // 👇 JAR must match the file name in your repo
+        await cheerpjRunMain("Game", "./ChessGuiRealReal-1.0.0.jar");
+
         status.textContent = 'Running!';
       } catch (e) {
         console.error(e);
         status.textContent = '❌ Failed to launch game: ' + e;
       }
+    });
+  </script>
+</body>
+</html>
+
     });
   </script>
 </body>
