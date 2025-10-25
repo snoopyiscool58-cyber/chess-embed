@@ -44,20 +44,20 @@
     <div id="container">
         <h1>Chess Game</h1>
         
-        <button id="run">Start Chess Game</button>
+        <button id="runCorrect">Start Chess Game (Correct Path)</button>
         
         <div id="status" class="ready">Ready to start</div>
         
         <div style="margin-top: 20px; font-size: 14px; color: #666;">
-            <p>Using correct path: ./ChessGuiRealReal-1.0.0.jar</p>
+            <p>Using exact path: /chess-embed/ChessGuiRealReal-1.0.0.jar</p>
         </div>
     </div>
 
     <script src="https://cjrtnc.leaningtech.com/2.3/loader.js"></script>
     <script>
-        document.getElementById('run').addEventListener('click', async () => {
+        document.getElementById('runCorrect').addEventListener('click', async () => {
             const status = document.getElementById('status');
-            const runBtn = document.getElementById('run');
+            const runBtn = document.getElementById('runCorrect');
             
             try {
                 runBtn.disabled = true;
@@ -67,7 +67,7 @@
                 await cheerpjInit();
                 status.textContent = 'Starting chess game...';
                 
-                // Use ./ to explicitly indicate current directory
+                // Use the EXACT correct path with /chess-embed/
                 await cheerpjRunMain("Game", "/chess-embed/ChessGuiRealReal-1.0.0.jar");
                 
                 status.textContent = 'Chess game running!';
@@ -78,6 +78,11 @@
                 status.textContent = 'Error: ' + e.message;
                 status.className = 'error';
                 runBtn.disabled = false;
+                
+                // Show exactly what URL it's trying to access
+                if (e.message.includes('404')) {
+                    status.textContent += ' - Check browser network tab for exact URL being requested';
+                }
             }
         });
     </script>
